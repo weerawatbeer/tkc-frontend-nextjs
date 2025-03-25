@@ -26,13 +26,7 @@ import {
 import { Loader } from '@/components/ui/loader'
 import Link from 'next/link'
 import { Textarea } from '@/components/ui/textarea'
-
-// Define the category enum as specified
-export enum CATEGORY {
-  FRAGRANCES = 'fragrances',
-  FURNITURE = 'furniture',
-  BEAUTY = 'beauty',
-}
+import { CATEGORY } from '@/types/category'
 
 // Create a schema for form validation
 const formSchema = z.object({

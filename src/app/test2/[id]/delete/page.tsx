@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import Link from 'next/link'
@@ -16,12 +16,10 @@ interface Product {
   thumbnail: string
 }
 
-export default function DeleteProductPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default function DeleteProductPage() {
   const router = useRouter()
+  const params = useParams()
+  console.log(' 💯 ~ DeleteProductPage ~ params:', params)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)

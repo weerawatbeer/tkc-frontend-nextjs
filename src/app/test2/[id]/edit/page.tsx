@@ -3,7 +3,7 @@
 import type React from 'react'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,12 +20,9 @@ interface Product {
   thumbnail: string
 }
 
-export default function EditProductPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default function EditProductPage() {
   const router = useRouter()
+  const params = useParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
