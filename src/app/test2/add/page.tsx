@@ -123,7 +123,7 @@ export default function AddProductPage() {
                     <FormDescription>
                       Must start with TKC and be 5-30 characters long.
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -142,7 +142,7 @@ export default function AddProductPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -177,7 +177,7 @@ export default function AddProductPage() {
                     <FormDescription>
                       Enter a number with exactly 2 decimal places (e.g., 19.99)
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -197,7 +197,7 @@ export default function AddProductPage() {
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value={CATEGORY.FRAGRANCES}>
                           Fragrances
                         </SelectItem>
@@ -207,7 +207,7 @@ export default function AddProductPage() {
                         <SelectItem value={CATEGORY.BEAUTY}>Beauty</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -216,7 +216,11 @@ export default function AddProductPage() {
                 <Button variant="outline" asChild>
                   <Link href="/test2">Cancel</Link>
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="cursor-pointer"
+                >
                   {isSubmitting ? (
                     <>
                       <Loader className="mr-2 h-4 w-4" />
