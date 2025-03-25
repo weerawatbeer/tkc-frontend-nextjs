@@ -175,7 +175,12 @@ export default function EditProductPage() {
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button type="submit" disabled={updating}>
+            <Button
+              type="submit"
+              disabled={updating}
+              className="cursor-pointer"
+              variant="outline"
+            >
               {updating ? (
                 <>
                   <Loader className="mr-2 h-4 w-4" />

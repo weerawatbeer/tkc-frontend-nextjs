@@ -128,9 +128,10 @@ export default function DeleteProductPage() {
               <Link href="/test2">Cancel</Link>
             </Button>
             <Button
-              variant="destructive"
+              variant="outline"
               onClick={handleDelete}
               disabled={deleting}
+              className="cursor-pointer"
             >
               {deleting ? (
                 <>

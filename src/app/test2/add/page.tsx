@@ -220,6 +220,7 @@ export default function AddProductPage() {
                   type="submit"
                   disabled={isSubmitting}
                   className="cursor-pointer"
+                  variant="outline"
                 >
                   {isSubmitting ? (
                     <>
