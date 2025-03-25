@@ -18,7 +18,7 @@ export default function ProgressCircle({
   return (
     <div className="flex max-w-[220px] flex-col items-center">
       <svg
-        className="progress-ring"
+        className="rotate-[-90deg] transform"
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
@@ -48,7 +48,7 @@ export default function ProgressCircle({
           y="50%"
           textAnchor="middle"
           dy=".3em"
-          className="fill-[#5F6073] text-2xl font-bold"
+          className="absolute origin-center rotate-90 fill-[#5F6073] text-2xl font-bold"
         >
           {percentage}%
         </text>
