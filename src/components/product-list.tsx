@@ -5,7 +5,7 @@ import type React from 'react'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Pencil, Trash2 } from 'lucide-react'
-// import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -113,7 +113,7 @@ export default function ProductList() {
           variant={i === currentPage ? 'default' : 'outline'}
           size="sm"
           onClick={() => handlePageChange(i)}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 cursor-pointer p-0"
         >
           {i}
         </Button>
@@ -127,7 +127,7 @@ export default function ProductList() {
           size="sm"
           onClick={() => handlePageChange(1)}
           disabled={currentPage === 1}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 cursor-pointer p-0"
         >
           1
         </Button>
@@ -144,7 +144,7 @@ export default function ProductList() {
             size="sm"
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 cursor-pointer p-0"
           >
             {totalPages}
           </Button>
@@ -158,7 +158,9 @@ export default function ProductList() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Product List</h1>
         <Button asChild>
-          <Link href="/test2/add">New Product</Link>
+          <Link href="/test2/add" className="rounded-2xl border">
+            New Product
+          </Link>
         </Button>
       </div>
 
@@ -218,7 +220,7 @@ export default function ProductList() {
                     {(currentPage - 1) * pageSize + index + 1}
                   </TableCell>
                   <TableCell>
-                    {/* <div className="relative h-12 w-12 overflow-hidden rounded-md">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-md">
                       {product?.thumbnail && (
                         <Image
                           src={
@@ -229,7 +231,7 @@ export default function ProductList() {
                           className="object-cover"
                         />
                       )}
-                    </div> */}
+                    </div>
                   </TableCell>
                   <TableCell>{product.title}</TableCell>
                   <TableCell>{product.category}</TableCell>
@@ -271,14 +273,22 @@ export default function ProductList() {
             value={pageSize.toString()}
             onValueChange={handlePageSizeChange}
           >
-            <SelectTrigger className="h-8 w-16">
+            <SelectTrigger className="h-8 w-16 cursor-pointer">
               <SelectValue placeholder="10" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5</SelectItem>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
+            <SelectContent className="cursor-pointer bg-white">
+              <SelectItem value="5" className="cursor-pointer">
+                5
+              </SelectItem>
+              <SelectItem value="10" className="cursor-pointer">
+                10
+              </SelectItem>
+              <SelectItem value="20" className="cursor-pointer">
+                20
+              </SelectItem>
+              <SelectItem value="50" className="cursor-pointer">
+                50
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
