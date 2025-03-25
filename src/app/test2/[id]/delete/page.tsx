@@ -19,7 +19,7 @@ interface Product {
 export default function DeleteProductPage() {
   const router = useRouter()
   const params = useParams()
-  console.log(' 💯 ~ DeleteProductPage ~ params:', params)
+
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
