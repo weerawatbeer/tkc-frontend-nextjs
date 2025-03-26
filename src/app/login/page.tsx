@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -19,6 +19,7 @@ import { Loader } from '@/components/ui/loader'
 import { useAuth } from '@/hooks/use-auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { AxiosError } from 'axios'
 
 // Form validation schema
 const formSchema = z.object({
@@ -30,7 +31,7 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   const [isLoading, setIsLoading] = useState(false)
@@ -45,6 +46,12 @@ export default function LoginPage() {
     },
   })
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(callbackUrl || '/') // Redirect to protected page after login
+    }
+  }, [callbackUrl, isAuthenticated, router])
+
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true)
@@ -57,8 +64,8 @@ export default function LoginPage() {
     } catch (err) {
       console.error('Login error:', err)
       setError(
-        err instanceof Error
-          ? err.message
+        err instanceof AxiosError
+          ? err?.response?.data?.message
           : 'Failed to login. Please check your credentials.'
       )
     } finally {
@@ -94,7 +101,7 @@ export default function LoginPage() {
                     <FormControl>
                       <Input placeholder="Enter your username" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -112,7 +119,7 @@ export default function LoginPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />

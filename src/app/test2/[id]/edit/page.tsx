@@ -9,23 +9,26 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader } from '@/components/ui/loader'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
-
-interface Product {
-  id: number
-  title: string
-  description: string
-  price: number
-  category: string
-  thumbnail: string
-}
+import {
+  useProduct,
+  useUpdateProduct,
+  formatAxiosError,
+} from '@/hooks/use-products'
+import { toast } from '@/hooks/use-toast'
 
 export default function EditProductPage() {
   const router = useRouter()
   const params = useParams()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useProduct(Number(params?.id))
+  const updateProduct = useUpdateProduct()
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -34,29 +37,15 @@ export default function EditProductPage() {
   })
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `https://dummyjson.com/products/${params.id}`
-        )
-        const data = await response.json()
-        setProduct(data)
-        setFormData({
-          title: data.title,
-          description: data.description,
-          price: data.price.toString(),
-          category: data.category,
-        })
-      } catch (error) {
-        console.error('Error fetching product:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (product) {
+      setFormData({
+        title: product.title,
+        description: product.description,
+        price: product.price.toString(),
+        category: product.category,
+      })
     }
-
-    fetchProduct()
-  }, [params.id])
+  }, [product])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -67,46 +56,84 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setUpdating(true)
 
-    try {
-      const response = await fetch(
-        `https://dummyjson.com/products/${params.id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: formData.title,
-            description: formData.description,
-            price: Number.parseFloat(formData.price),
-            category: formData.category,
-          }),
-        }
-      )
-
-      if (response.ok) {
-        router.push('/test2')
+    updateProduct.mutate(
+      {
+        id: Number(params.id),
+        data: {
+          title: formData.title,
+          description: formData.description,
+          price: Number.parseFloat(formData.price),
+          category: formData.category,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Product updated',
+            description: 'The product has been updated successfully.',
+          })
+          router.push('/test2')
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: formatAxiosError(error),
+            variant: 'destructive',
+          })
+        },
       }
-    } catch (error) {
-      console.error('Error updating product:', error)
-    } finally {
-      setUpdating(false)
-    }
+    )
   }
 
-  if (loading) {
+  // Render skeleton while loading
+  if (isLoading) {
     return (
-      <div className="container mx-auto flex h-64 items-center justify-center py-8">
-        <Loader className="h-8 w-8" />
+      <div className="container mx-auto py-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-6 flex items-center justify-between">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+
+            <div className="flex justify-end">
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
-  if (!product) {
+  if (isError || !product) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold">Product Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            {formatAxiosError(error)}
+          </p>
           <Button asChild>
             <Link href="/test2">Back to Products</Link>
           </Button>
@@ -176,12 +203,12 @@ export default function EditProductPage() {
 
           <div className="flex justify-end space-x-2">
             <Button
-              type="submit"
-              disabled={updating}
               className="cursor-pointer"
+              type="submit"
+              disabled={updateProduct.isPending}
               variant="outline"
             >
-              {updating ? (
+              {updateProduct.isPending ? (
                 <>
                   <Loader className="mr-2 h-4 w-4" />
                   Updating...

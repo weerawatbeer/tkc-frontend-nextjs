@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -26,6 +25,8 @@ import {
 import { Loader } from '@/components/ui/loader'
 import Link from 'next/link'
 import { Textarea } from '@/components/ui/textarea'
+import { useAddProduct, formatAxiosError } from '@/hooks/use-products'
+import { toast } from '@/hooks/use-toast'
 import { CATEGORY } from '@/types/category'
 
 // Create a schema for form validation
@@ -52,7 +53,7 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function AddProductPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const addProduct = useAddProduct()
 
   // Initialize the form with react-hook-form and zod validation
   const form = useForm<FormValues>({
@@ -67,35 +68,30 @@ export default function AddProductPage() {
 
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true)
-
-    try {
-      const response = await fetch('https://dummyjson.com/products/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: data.title,
-          description: data.description,
-          price: Number.parseFloat(data.price),
-          category: data.category,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        console.log('Product added successfully:', result)
-        router.push('/test2')
-      } else {
-        console.error('Failed to add product:', result)
-        // Handle API error
+    addProduct.mutate(
+      {
+        title: data.title,
+        description: data.description,
+        price: Number.parseFloat(data.price),
+        category: data.category,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Product added',
+            description: 'The product has been added successfully.',
+          })
+          router.push('/test2')
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: formatAxiosError(error),
+            variant: 'destructive',
+          })
+        },
       }
-    } catch (error) {
-      console.error('Error adding product:', error)
-      // Handle network error
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   return (
@@ -216,13 +212,8 @@ export default function AddProductPage() {
                 <Button variant="outline" asChild>
                   <Link href="/test2">Cancel</Link>
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="cursor-pointer"
-                  variant="outline"
-                >
-                  {isSubmitting ? (
+                <Button type="submit" disabled={addProduct.isPending}>
+                  {addProduct.isPending ? (
                     <>
                       <Loader className="mr-2 h-4 w-4" />
                       Adding Product...

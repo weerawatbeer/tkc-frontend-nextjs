@@ -1,82 +1,89 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import Image from 'next/image'
-
-interface Product {
-  id: number
-  title: string
-  description: string
-  price: number
-  category: string
-  thumbnail: string
-}
+import {
+  useProduct,
+  useDeleteProduct,
+  formatAxiosError,
+} from '@/hooks/use-products'
+import { toast } from '@/hooks/use-toast'
 
 export default function DeleteProductPage() {
   const router = useRouter()
   const params = useParams()
-
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [deleting, setDeleting] = useState(false)
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `https://dummyjson.com/products/${params.id}`
-        )
-        const data = await response.json()
-        setProduct(data)
-      } catch (error) {
-        console.error('Error fetching product:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProduct()
-  }, [params.id])
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useProduct(Number(params.id))
+  const deleteProduct = useDeleteProduct()
 
   const handleDelete = async () => {
-    setDeleting(true)
-
-    try {
-      const response = await fetch(
-        `https://dummyjson.com/products/${params.id}`,
-        {
-          method: 'DELETE',
-        }
-      )
-
-      if (response.ok) {
+    deleteProduct.mutate(Number(params?.id), {
+      onSuccess: () => {
+        toast({
+          title: 'Product deleted',
+          description: 'The product has been deleted successfully.',
+        })
         router.push('/test2')
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error)
-    } finally {
-      setDeleting(false)
-    }
+      },
+      onError: (error) => {
+        toast({
+          title: 'Error',
+          description: formatAxiosError(error),
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
-  if (loading) {
+  // Render skeleton while loading
+  if (isLoading) {
     return (
-      <div className="container mx-auto flex h-64 items-center justify-center py-8">
-        <Loader className="h-8 w-8" />
+      <div className="container mx-auto py-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-6 flex items-center justify-between">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+
+          <div className="bg-destructive/10 border-destructive mb-6 rounded-lg border p-6">
+            <Skeleton className="mb-4 h-6 w-3/4" />
+            <Skeleton className="mb-4 h-4 w-1/2" />
+
+            <div className="mb-4 flex items-start space-x-4">
+              <Skeleton className="h-24 w-24 rounded-md" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
-  if (!product) {
+  if (isError || !product) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold">Product Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            {formatAxiosError(error)}
+          </p>
           <Button asChild>
             <Link href="/test2">Back to Products</Link>
           </Button>
@@ -128,12 +135,11 @@ export default function DeleteProductPage() {
               <Link href="/test2">Cancel</Link>
             </Button>
             <Button
-              variant="outline"
+              variant="destructive"
               onClick={handleDelete}
-              disabled={deleting}
-              className="cursor-pointer"
+              disabled={deleteProduct.isPending}
             >
-              {deleting ? (
+              {deleteProduct.isPending ? (
                 <>
                   <Loader className="mr-2 h-4 w-4" />
                   Deleting...

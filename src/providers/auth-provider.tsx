@@ -3,6 +3,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { AuthContext, type User } from '@/contexts/auth-context'
+import api from '@/lib/axios'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -53,40 +54,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null)
     setToken(null)
     localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
     localStorage.removeItem('authUser')
   }
 
   // Login function
   const login = async (username: string, password: string) => {
     try {
-      const response = await fetch('https://dummyjson.com/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          password,
-          expiresInMins: 30,
-        }),
+      const response = await api.post('/auth/login', {
+        username,
+        password,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Login failed')
-      }
-
-      const data = await response.json()
+      const data = response.data
 
       // Store token and user data
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('authUser', JSON.stringify(data))
 
-      setToken(data.token)
+      setToken(data.accessToken)
       setUser(data)
 
       // Fetch additional user profile data
-      await fetchUserProfile(data.accessToken)
+      await fetchUserProfile()
 
       return data
     } catch (error) {
@@ -96,21 +86,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   // Fetch user profile
-  const fetchUserProfile = async (authToken: string) => {
+  const fetchUserProfile = async () => {
     try {
-      const response = await fetch('https://dummyjson.com/auth/me', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-        // credentials: 'include',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile')
-      }
-
-      const userData = await response.json()
+      const response = await api.get('/auth/me')
+      const userData = response.data
 
       // Update user data with additional profile information
       const updatedUser = { ...user, ...userData }
@@ -134,21 +113,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return false
       }
 
-      const response = await fetch('https://dummyjson.com/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          refreshToken: refreshToken, // Optional, if not provided, the server will use the cookie
-          expiresInMins: 30, // optional (FOR ACCESS TOKEN), defaults to 60
-        }),
-        credentials: 'include', // Include cookies (e.g., accessToken) in the request
-      })
+      // Using axios directly here instead of the api instance
+      // because we need to handle this specific case separately
+      const response = await api.post(
+        'https://dummyjson.com/auth/refresh',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`,
+          },
+        }
+      )
 
-      if (!response.ok) {
-        return false
-      }
-
-      const data = await response.json()
+      const data = response.data
 
       // Update token in state and localStorage
       localStorage.setItem('accessToken', data.accessToken)
